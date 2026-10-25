@@ -1097,19 +1097,13 @@ def deploy_to_agentcore_runtime(
         protocol='HTTP',
         execution_role_arn=config.AGENTCORE_ROLE_ARN,
     )
-    import subprocess as _sp
-    _result = _sp.run(
-        [agentcore_cli.cli_path(), 'deploy', '--yes', '--region', config.AWS_REGION],
-        cwd=os.path.dirname(_SRC_DIR)
-    )
-    if _result.returncode != 0:
-        raise RuntimeError(f"agentcore deploy --yes failed (exit {_result.returncode})")
+
+    agentcore_cli.deploy()
+
     runtime_arn = agentcore_cli.deployed_runtime_arn()
-
     if not runtime_arn:
-        raise NotImplementedError("deploy_to_agentcore_runtime: AgentCore CLI deployment not implemented")
+        raise RuntimeError("AgentCore CLI deploy finished but no runtime ARN was recorded.")
 
-    # Wait for the runtime to become READY and return its ARN.
     print(f"  Runtime deployed: {runtime_arn}")
     print("  Waiting for runtime status READY", end='', flush=True)
     wait_for_runtime_ready(agentcore_control, runtime_arn.split('/')[-1])
